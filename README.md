@@ -11,9 +11,11 @@ Tecnologias usadas:
 
 #### Inicie o servidor (porta padrão do framework: 9501):
 ```bash
+cp .env.example .env
 docker-compose build
 docker-compose up
 docker exec -it hyperf bash
+composer install -o
 php bin/hyperf.php migrate
 ```
 

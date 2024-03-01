@@ -23,7 +23,6 @@ services:
       - SCAN_CACHEABLE=false
     networks:
       - hyperf
-    entrypoint: ["php", "bin/hyperf.php", "start"]
   db:
     container_name: 'mysql'
     image: mysql:8.3
