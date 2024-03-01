@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  alpine-swoole:
+    container_name: hyperf
+    build:  
+      context: ./
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        SW_VERSION: ${SW_VERSION}
+        COMPOSER_VERSION: ${COMPOSER_VERSION}
+        PHP_BUILD_VERSION: ${PHP_BUILD_VERSION}
+    volumes:
+      - ./:/opt/www
+    working_dir: /opt/www
+    ports:
+      - 9501:9501
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - APP_ENV=dev
+      - SCAN_CACHEABLE=false
+    networks:
+      - hyperf
+    entrypoint: ["php", "bin/hyperf.php", "start"]
+  db:
+    container_name: 'mysql'
+    image: mysql:8.3
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'jaya tech'
+      MYSQL_PASSWORD: 'jaya tech'
+      MYSQL_ROOT_PASSWORD: 'jaya tech'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+    networks:
+      - hyperf
+
+networks:
+  hyperf:
+  default:
+    name: hyperf
+    
