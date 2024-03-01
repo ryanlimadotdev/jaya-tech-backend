@@ -1,6 +1,5 @@
 # Jaya tech
 ## Teste técnico de processo seletivo (backend PHP)
-
 Tecnologias usadas:
 
 - PHP 8.3 (com lib Swoole 5.1.2)
@@ -8,6 +7,7 @@ Tecnologias usadas:
 - MySQL
 
 ### Getting started
+_Confira os volumes_ 
 
 #### Inicie o servidor (porta padrão do framework: 9501):
 ```bash
@@ -24,7 +24,7 @@ php bin/hyperf.php migrate
 docker exec -it hyperf bash
 composer test
 ```
-#### Documentação no Swagger na uri raiz ([http://localhost:9501/]())
+#### Documentação no Swagger no uri raiz ([http://localhost:9501/]())
 
 ### Decisões técnicas
 - A escolha de uma framework baseado em Swoole para tornar o serviço mais eficiente aproveitando o servidor assíncrono do Swoole
