@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ValueObjects;
 
-use App\ValueObjects\BaseValueObject;
+use Respect\Validation\Validator;
 
 readonly class Email extends BaseValueObject
 {
@@ -13,7 +13,7 @@ readonly class Email extends BaseValueObject
 
 	public static function isValid(string $value): bool
 	{
-		return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+		return Validator::email()->validate($value);
 	}
 
 }
