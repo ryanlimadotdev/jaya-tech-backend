@@ -17,7 +17,7 @@ docker-compose up -d
 docker exec -it hyperf bash
 composer install -o
 php bin/hyperf.php migrate
-php bin/hyperf.php start -d
+php bin/hyperf.php start
 ```
 
 #### Realize a suíte de testes:
