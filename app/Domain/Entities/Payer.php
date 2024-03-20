@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace App\Domain\Entities;
 
 use App\ValueObjects\Email;
-use Ramsey\Uuid\Nonstandard\Uuid;
 
 class Payer extends Entity implements \JsonSerializable
 {

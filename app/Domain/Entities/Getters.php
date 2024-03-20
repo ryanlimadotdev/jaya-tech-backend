@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace App\Domain\Entities;
 
 /**
  * Provides a way to access values from private properties
- * without allowing modify then 
+ * without allowing to modify then
  */
 trait Getters
 {

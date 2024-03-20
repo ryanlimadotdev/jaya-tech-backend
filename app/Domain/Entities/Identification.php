@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace App\Domain\Entities;
 
 use App\ValueObjects\Cnpj;
 use App\ValueObjects\Cpf;
+use App\ValueObjects\ValueObjectException;
 use JsonSerializable;
 
 readonly class Identification implements JsonSerializable
@@ -18,13 +19,16 @@ readonly class Identification implements JsonSerializable
 	)
 	{ }
 
+	/**
+	 * @throws ValueObjectException
+	 */
 	public static function create(string $identificationType, string $number): Identification
 	{
 		return new Identification(
 			$identificationType,
 			match (strtoupper($identificationType)) {
-				'CPF' => new Cnpj($number),
-				'CNPJ'=> new Cpf($number),
+				'CNPJ' => new Cnpj($number),
+				'CPF'=> new Cpf($number),
 		});
 	}
 
