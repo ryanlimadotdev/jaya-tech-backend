@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Domain\{Entities\Entity, Entities\Identification, Entities\Payer};
 use App\Helpers\Query;
-use App\Domain\{Entity, Payer, Identification};
 use App\ValueObjects\Email;
 
 class PayerRepository extends BaseRepository
@@ -72,7 +72,7 @@ class PayerRepository extends BaseRepository
 		);
 	}
 
-	/** @param Payer $payment */
+	/** @param \App\Domain\Entities\Payer $payment */
 	public function save(Entity $payment): void
 	{
 		$query = Query::create(

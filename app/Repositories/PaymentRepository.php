@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Domain\{Entities\Entity, Entities\Payment, Entities\PaymentStatus};
 use App\Helpers\Query;
-use App\Domain\{Entity, Payment, PaymentStatus};
 use DateTime;
 use Hyperf\DB\DB;
 use PDO;
@@ -33,6 +33,9 @@ class PaymentRepository extends BaseRepository
 		return array_map($this->fromRow(...), $fetched === false ? [] : $fetched);
 	}
 
+	/**
+	 * @return ?Payment
+	 */
 	public function findById(string|int $id): ?Entity
 	{
 		$query = Query::create(
@@ -44,9 +47,12 @@ class PaymentRepository extends BaseRepository
 		$fetched = $this->execute((string) $query, [$id], PDO::FETCH_ASSOC, false);
 
 
-		return $this->fromRow($fetched);
+		return $fetched === false ? null : $this->fromRow($fetched);
 	}
 
+	/**
+	 * @return Payment
+	 */
 	public function getById(string|int $id): Entity
 	{
 		return $this->findById($id) ;
@@ -74,12 +80,10 @@ class PaymentRepository extends BaseRepository
 			'updated_at' => '?',
 			'payer_id' => '?'
 		]);
-
-		/** @var PDOStatement $stmt */
 		
 		$bindings = [
 			$payment->id,
-			$payment->transactionAmmount,
+			$payment->transactionAmount,
 			$payment->installments,
 			$payment->token,
 			$payment->paymentMethodId,
@@ -116,7 +120,7 @@ class PaymentRepository extends BaseRepository
 		$query->where("id = ?");
 
 		$bindings = [
-			$payment->transactionAmmount,
+			$payment->transactionAmount,
 			$payment->installments,
 			$payment->token,
 			$payment->paymentMethodId,
@@ -154,11 +158,8 @@ class PaymentRepository extends BaseRepository
 	 * @param array|false $row
 	 * @return Payment|null
 	 */
-	protected function fromRow(array|false $row): ?Payment
+	protected function fromRow(array|false $row): Payment
 	{
-		if ($row === false) {
-			return null;
-		}
 
 		return new Payment(
 			floatval($row['transaction_amount']),

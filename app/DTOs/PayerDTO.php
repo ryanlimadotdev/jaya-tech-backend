@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
-use App\Domain\{Payer, Identification};
-use App\ValueObjects\{Email};
+use App\Domain\{Entities\Identification, Entities\Payer};
+use App\ValueObjects\{Email, ValueObjectException};
 
 /**
  * @see Payer
@@ -15,23 +15,26 @@ readonly class PayerDTO {
 		public string $email,
 		public string $identificationType,
 		public string $identificationNumber,
-		private ?string $payerEntityType = null,
-		private ?string $payerType = null,
-		private ?string $id = null,
+		public ?string $payerEntityType = null,
+		public ?string $payerType = null,
+		public ?string $id = null,
 	)
 	{ }
 
 	public static function fromPayer(Payer $payer): self
 	{
 		return new self(
-			$payer->email,
+			(string) $payer->email,
 			$payer->identification->payerIdentificationType,
-			$payer->identification->payerIdentificationNumber,
+			(string) $payer->identification->payerIdentificationNumber,
 			$payer->payerType,
 			$payer->id,
 		);
 	}
 
+	/**
+	 * @throws ValueObjectException
+	 */
 	public function toDomain(): Payer
 	{
 		return new Payer(

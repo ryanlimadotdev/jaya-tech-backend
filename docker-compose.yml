@@ -18,6 +18,7 @@ services:
       - 9501:9501
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "windows.environment:192.168.1.11"
     environment:
       - APP_ENV=dev
       - SCAN_CACHEABLE=false

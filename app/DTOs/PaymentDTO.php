@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
+use App\Domain\Entities\Payer;
+use App\Domain\Entities\Payment;
+use App\Domain\Entities\PaymentStatus;
 use DateTime;
-use App\Domain\Payment;
 
 /**
  * @see App\Domain\Payment
@@ -36,23 +38,23 @@ readonly class PaymentDTO {
 			$payment->notificationUrl,
 			$payment->createdAt,
 			$payment->updatedAt,
-			$payment->status,
+			$payment->status->value,
 			$payment->id,
 		);
 	}
 
-	public function toDomain(): Payment
+	public function toDomain(?Payer $payer = null): Payment
 	{
 		return new Payment(
 			$this->transactionAmount,
 			$this->installments,
 			$this->token,
 			$this->paymentMethodId,
-			$this->payerDTO->toDomain(),
+			$payer ?? $this->payerDTO->toDomain(),
 			$this->notificationUrl,
 			$this->createdAt,
 			$this->updatedAt,
-			$this->status,
+			$this->status ?? PaymentStatus::Pending,
 			$this->id
 		);
 	}

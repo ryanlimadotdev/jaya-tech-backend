@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use Exception;
 use Hyperf\Contract\Jsonable;
 
 function json(mixed $data): Jsonable
@@ -16,7 +17,12 @@ function json(mixed $data): Jsonable
 
 		public function __toString(): string
 		{
-			return json_encode($this->data);
+			$json = json_encode($this->data);
+			if ($json === false) {
+				throw new Exception('The provided data is not serializable');
+			}
+
+			return $json;
 		}
 	};
 }
