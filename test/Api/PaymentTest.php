@@ -14,19 +14,22 @@ namespace HyperfTest\Api;
 
 use App\Repositories\PaymentRepository;
 use Hyperf\Context\ApplicationContext;
-use Hyperf\Testing\TestCase;
-use HyperfTest\PatchHttpRequestTestCase;
-use Override;
+use Hyperf\Testing\Concerns\MakesHttpRequests;
+use Hyperf\Testing\Http\Client;
+use PHPUnit\Framework\Attributes\AfterClass;
+use PHPUnit\Framework\Attributes\Depends;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
+use PHPUnit\Framework\TestCase;
 
-/**
- * @internal
- */
 class PaymentTest extends TestCase
 {
 
-	use PatchHttpRequestTestCase;
+	use MakesHttpRequests;
 
-	private string $testPaymentId;
+	public function __construct(string $name)
+	{
+		parent::__construct($name);
+	}
 
 	protected array $paymentJsonStructure = [
 		'id',
@@ -49,10 +52,7 @@ class PaymentTest extends TestCase
 		'updated_at',
 	];
 
-	/**
-	 * @before
-	 */
-    public function testPaymentCreation(): void
+    public function testPaymentCreation(): string
     {
 	    $payload = [
 		    "transaction_amount" => 245.90,
@@ -60,28 +60,27 @@ class PaymentTest extends TestCase
 		    "token" => "ae4e50b2a8f3h6d9f2c3a4b5d6e7f8g9",
 		    "payment_method_id" => "master",
 		    "payer" => [
-			    "email" => "example_random@gmail.com",
+			    "email" => "example_randm@gmail.com",
 			    "identification" => [
 				    "type" => "CPF",
-				    "number" => "12345678909",
+				    "number" => "79895375085",
 			    ],
 		    ],
 	    ];
 
 	    $expectedStructure = [
 		    'id',
-		    'createdAt',
+		    'created_at',
 	    ];
 
-		 $this->testPaymentId = $this->json('rest/payments', $payload)
+		return $this->json('rest/payments', $payload)
 		 	->assertStatus(201)
 		 	->assertJsonStructure($expectedStructure)
 		    ->decodeResponseJson()['id'];
 
-
-
     }
-	
+
+	#[Depends('testPaymentCreation')]
 	public function testGetAllPayments(): void
 	{
 
@@ -95,30 +94,48 @@ class PaymentTest extends TestCase
 
 	}
 
-	public function testGetPaymentById(): void
+	#[Depends('testPaymentCreation')]
+	public function testGetPaymentById(string $id): void
 	{
-		 $this->get('rest/payments/' . $this->testPaymentId)
+		 $this->get("rest/payments/$id")
 			->assertStatus(200)
 			->assertJsonStructure($this->paymentJsonStructure);
 	}
 
-	public function testPaymentUpdate(): void
+	#[Depends('testPaymentCreation')]
+	public function testPaymentUpdate(string $id): void
 	{
 		$payload = [
 			'status' => 'PAID',
 		];
 
-		$this->patch('rest/payments/' . $this->testPaymentId , $payload)
+		$headers['Content-Type'] = 'application/json';
+		$options = [
+			'headers' => $headers,
+			'form_params' => $payload
+		];
+
+		$client = ApplicationContext::getContainer()->get(Client::class);
+
+		$response = $client->request('PATCH', "rest/payments/$id", $options);
+
+		$this->createTestResponse($response)
 			->assertStatus(204)
 			->assertNoContent();
 	}
 
-	public function testPaymentCancellation(): void
+	#[Depends('testPaymentCreation')]
+	public function testPaymentCancellation(string $id): void
 	{
-		$this->delete('/rest/payments/' . $this->testPaymentId)
+		$this->delete("/rest/payments/$id")
 			->assertStatus(204)
 			->assertNoContent();
+	}
 
+	#[Depends('testPaymentCreation'), AfterClass, DoesNotPerformAssertions]
+	public function testEnd(string $id): void
+	{
+		ApplicationContext::getContainer()->get(PaymentRepository::class)->delete($id);
 	}
 
 }
