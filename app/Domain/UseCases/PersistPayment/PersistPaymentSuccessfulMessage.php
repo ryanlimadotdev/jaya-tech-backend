@@ -17,7 +17,7 @@ readonly class PersistPaymentSuccessfulMessage implements \JsonSerializable
 	{
 		return (object) [
 			'id' => $this->id,
-			'createdAt' => $this->createdAt	,
+			'created_at' => $this->createdAt,
 		];
 	}
 }

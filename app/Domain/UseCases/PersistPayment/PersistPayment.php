@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\UseCases\PersistPayment;
 
-use App\Domain\{Payer, Payment, UseCases\FindOrCreatePayer\FindOrCreatePayer, UseCases\UnsuccessfulMessage};
+use DomainException;
+use App\Domain\{Entities\Payer,
+	UseCases\FindOrCreatePayer\FindOrCreatePayer,
+	UseCases\FindOrCreatePayer\FindOrCreatePayerError};
 use App\DTOs\PaymentDTO;
 use App\Repositories\PaymentRepository;
 
@@ -16,7 +19,7 @@ readonly class PersistPayment {
 	){
 	}
 
-	public function handle(PaymentDTO $paymentDTO): PersistPaymentSuccessfulMessage|UnsuccessfulMessage
+	public function handle(PaymentDTO $paymentDTO): PersistPaymentSuccessfulMessage|PersistPaymentError|FindOrCreatePayerError
 	{
 		$result = $this->findPayerOrCreate->handle($paymentDTO->payerDTO);
 
@@ -24,28 +27,20 @@ readonly class PersistPayment {
 			return $result;
 		}
 
-        $payment = new Payment(
-            $paymentDTO->transactionAmount,
-            $paymentDTO->installments,
-            $paymentDTO->token,
-            $paymentDTO->paymentMethodId,
-            $result,
-            $paymentDTO->notificationUrl,
-            $paymentDTO->createdAt,
-			$paymentDTO->updatedAt,
-        );
-
 		try {
+			$payment = $paymentDTO->toDomain($result);
 			$this->paymentRepository->save($payment);
 		}
-		catch (\Exception $exception) {
-			return new UnsuccessfulMessage('Unable to access this feature at this time!', 0);
+		catch (DomainException) {
+			return PersistPaymentError::InvalidDataProvided;
+		} catch (\PDOException $e) {
+			return PersistPaymentError::InfrastructureProblems;
 		}
+
 		return new PersistPaymentSuccessfulMessage(
 			$payment->id,
-			$payment->createdAt->format('Y-m-d H:i:s')
+			$payment->createdAt->format('Y-m-d H:i:s'),
 		);
-
 	}
 
 }

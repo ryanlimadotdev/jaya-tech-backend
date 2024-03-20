@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller\Payment;
 
+use App\Domain\UseCases\UpdatePaymentStatus\UpdatePaymentStatusError;
+use App\Domain\UseCases\UpdatePaymentStatus\UpdatePaymentStatusSuccessfulMessage;
 use Hyperf\Swagger\Annotation as OA;
 use App\Controller\AbstractController;
-use App\Domain\UseCases\UnsuccessfulMessage;
 use App\Domain\UseCases\UpdatePaymentStatus\UpdatePaymentStatus;
 use Psr\Http\Message\ResponseInterface;
 
@@ -46,14 +47,19 @@ class UpdatePaymentStatusController extends AbstractController
 
 	public function index(string $id): ResponseInterface
 	{
+
 		if (!isset($this->request->all()['status'])) {
 			return $this->response->withStatus(400);
 		}
 
 		$result = $this->updatePaymentStatus->handle($id, $this->request->all()['status']);
 
-		if ($result instanceof UnsuccessfulMessage and $result->getCode()) {
+		if ($result === UpdatePaymentStatusError::CantLocatePayment) {
 			return $this->response->withStatus(404);
+		}
+
+		if ($result === UpdatePaymentStatusError::InvalidStatusProvided) {
+			return $this->response->withStatus(403);
 		}
 
 		return $this->response->withStatus(204);

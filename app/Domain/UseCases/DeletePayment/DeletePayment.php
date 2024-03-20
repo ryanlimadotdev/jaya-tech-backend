@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\UseCases\DeletePayment;
 
-use App\Domain\Payment;
-use App\Domain\PaymentStatus;
-use App\Domain\UseCases\UnsuccessfulMessage;
+use App\Domain\Entities\Payment;
+use App\Domain\Entities\PaymentStatus;
 use App\Repositories\PaymentRepository;
 
 /**
@@ -20,27 +19,26 @@ readonly class DeletePayment
 	public function __construct(
 		private PaymentRepository $paymentRepository,
 	)
-	{ }	
+	{ }
 
-	public function handle(string $id): DeletePaymentSuccessfulMessage|UnsuccessfulMessage
+	public function handle(string $id): DeletePaymentSuccessfulMessage|DeletePaymentError
 	{
 
-		/** @var Payment $payment */
 		$payment = $this->paymentRepository->findById($id);
 
 		if (!($payment instanceof Payment)) {
-			return new UnsuccessfulMessage(code: self::UNREACHABLE_ID);
+			return DeletePaymentError::CantLocatePayment;
 		}
 
 		$payment->updateStatus(PaymentStatus::Canceled);
-		
+
 		try {
 			$this->paymentRepository->update($payment);
 		} catch (\Exception) {
-			return new UnsuccessfulMessage();
+			return DeletePaymentError::InfrastructureProblems;
 		}
 
-		return new DeletePaymentSuccessfulMessage(PaymentStatus::Canceled->value);
-		
+		return new DeletePaymentSuccessfulMessage();
+
 	}
 }

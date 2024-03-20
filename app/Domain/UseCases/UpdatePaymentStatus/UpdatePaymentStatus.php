@@ -4,39 +4,43 @@ declare(strict_types=1);
 
 namespace App\Domain\UseCases\UpdatePaymentStatus;
 
-use App\Domain\Payment;
-use App\Domain\PaymentStatus;
-use App\Domain\UseCases\UnsuccessfulMessage;
+
+use App\Domain\Entities\Payment;
+use App\Domain\Entities\PaymentStatus;
 use App\Repositories\PaymentRepository;
 
-class UpdatePaymentStatus
+readonly class UpdatePaymentStatus
 {
-
-	const int UNREACHABLE_ID = 0;
 
 	public function __construct(
 		private PaymentRepository $paymentRepository,
 	)
 	{ }	
 
-	public function handle(string $id, string $newStatus): UpdatePaymentStatusSuccessfulMessage|UnsuccessfulMessage
+	public function handle(string $id, string $newStatus): UpdatePaymentStatusSuccessfulMessage|UpdatePaymentStatusError
 	{
 
 		$payment = $this->paymentRepository->findById($id);
 
 		if (! ($payment instanceof Payment)) {
-			return  new UnsuccessfulMessage(code: self::UNREACHABLE_ID);
+			return UpdatePaymentStatusError::CantLocatePayment;
 		}
 
-		$payment->updateStatus(PaymentStatus::from(strtoupper($newStatus)));
+		try {
+			$newStatus = PaymentStatus::from(strtoupper($newStatus));
+		} catch (\ValueError $e) {
+			return UpdatePaymentStatusError::InvalidStatusProvided;
+		}
+
+		$payment->updateStatus($newStatus);
 
 		try {
 			$this->paymentRepository->update($payment);
-		} catch (\Exception $e) {
-			return new UnsuccessfulMessage();
+		} catch (\PDOException $e) {
+			return UpdatePaymentStatusError::InfrastructureProblems;
 		}
 
-		return new UpdatePaymentStatusSuccessfulMessage($newStatus);
+		return new UpdatePaymentStatusSuccessfulMessage($newStatus->value);
 		
 	}
 }

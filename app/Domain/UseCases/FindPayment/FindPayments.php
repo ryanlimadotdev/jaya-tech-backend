@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\UseCases\FindPayment;
 
-use App\Domain\Payment;
-use App\Domain\UseCases\UnsuccessfulMessage;
+use App\Domain\Entities\Payment;
 use App\Repositories\PaymentRepository;
+use DomainException;
 
 /**
  * @method array<Payment> getAll()
  * @method Payment getById(int|string $id)
  * @method Payment|null findById(int|string $id)
  */
-
 readonly class FindPayments
 {
 	public function __construct(
@@ -28,7 +27,7 @@ readonly class FindPayments
 			return $this->paymentRepository->$method(...$arguments);
 		}
 
-		return new UnsuccessfulMessage('You are not allowed to use this resource here!', 0);
+		throw new DomainException();
 
 	}
 

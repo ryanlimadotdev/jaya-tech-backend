@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller\Payment;
 
+use App\Domain\UseCases\DeletePayment\DeletePaymentError;
 use Hyperf\Swagger\Annotation as OA;
 use App\Controller\AbstractController;
 use App\Domain\UseCases\DeletePayment\DeletePayment;
-use App\Domain\UseCases\UnsuccessfulMessage;
 use Psr\Http\Message\ResponseInterface;
 
 #[OA\HyperfServer('swagger')]
@@ -37,7 +37,7 @@ class DeletePaymentController extends AbstractController
 
 		$result = $this->deletePayment->handle($id);
 
-		if ($result instanceof UnsuccessfulMessage and $result->getCode()) {
+		if ($result instanceof DeletePaymentError) {
 			return $this->response->withStatus(404);
 		}
 
